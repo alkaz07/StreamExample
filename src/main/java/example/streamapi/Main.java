@@ -1,16 +1,61 @@
 package example.streamapi;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Stream;
 
 public class Main {
     public static void main(String[] args) {
-        example0();
-        System.out.println("------ example1: ------------");
-        example1();
-        example2();
+       // example0();
+       // System.out.println("------ example1: ------------");
+       // example1();
+      //  example2();
+      //  exampleHuman();
+        exampleHuman2();
+    }
+
+    private static void exampleHuman2() {
+        List<Human> humans= List.of(new Human("Иванов", 19, "программист")
+                ,new Human("Петров", 17, "школьник")
+                ,new Human("Сидоров", 39, "препод")
+                ,new Human("Баранов", 29, "программист")
+                ,new Human("Петров",17,"школьник")
+                ,new Human("Григорьева", 39, "журналист"));
+        //humans.stream().sorted().forEach(System.out::println); //Обязательно нужно для элементов потока реализовать интерфейс Comparable
+        humans.stream().sorted(Comparator.comparingInt(Human::getAge)).forEach(System.out::println);
+
+        System.out.println("------------------------------------");
+        humans.stream().distinct().forEach(System.out::println);
+        Set<Human> set = new LinkedHashSet<>(humans);
+        System.out.println("set = " + set);
+        System.out.println("-------------------------------------");
+        List<String> professions= humans.stream().distinct().map(Human::getProfession).sorted().toList();
+        System.out.println("professions = " + professions);
+
+        humans.stream()
+                .distinct()
+                .peek(human -> System.out.println("очередной человек = " + human))      //обычно для логирования и отладки
+                .filter(h->h.getAge()<20)
+                .peek(human -> System.out.println("фильтрованный человек = " + human))      
+                .sorted()
+                .forEach(System.out::println);
+
+        //Количество уникальных объектов
+        int kolvo = (int) humans.stream().distinct().count();
+        System.out.println("kolvo = " + kolvo);
+
+        //Возраст самого старого человечка
+        OptionalInt a = humans.stream().distinct().mapToInt(Human::getAge).max();
+        if (a.isPresent())
+            System.out.println("максимальный возраст "+a.getAsInt());
+        //Профессия самого старого человека
+        Optional<Human> starik = humans.stream().distinct().max(Comparator.comparingInt(Human::getAge));
+        System.out.println("профессия старика = " + starik.get().getProfession());
+
+        Optional<Human> starik2 = humans.stream().sorted().max(Comparator.comparingInt(Human::getAge));
+        System.out.println("профессия старика2 = " + starik2.get().getProfession());
+
+        //Профессии всех людей с максимальным возрастом
+
     }
 
     private static void example2() {
@@ -56,6 +101,27 @@ public class Main {
             System.out.println("r = " + r);
         }
 
+    }
+
+    public static void exampleHuman(){
+        List<Human> humans= List.of(new Human("Иванов", 19, "программист")
+        ,new Human("Петров", 17, "школьник")
+        ,new Human("Сидоров", 39, "препод"));
+        List<Human> oldNonProgrammers =humans.stream()
+                .filter(h -> h.getAge()>18) //отфильтровать тех, у кого возраст > 18
+                .filter(h -> !h.getProfession().equals("программист"))//из того, что получилось, отфильтровать тех, у кого профессия не "программист"
+                .toList();          //собрать то, что получилось, в список
+
+        System.out.println("oldNonProgrammers = " + oldNonProgrammers);
+        oldNonProgrammers.getFirst().setAge( oldNonProgrammers.getFirst().getAge()+1);
+        System.out.println("oldNonProgrammers = " + oldNonProgrammers);
+        
+      //  oldNonProgrammers.add(new Human("Алоев", 15, "сварщик"));
+        System.out.println("oldNonProgrammers = " + oldNonProgrammers.getClass());
+        //oldNonProgrammers.sort(Comparator.comparing(Human::getName));
+        List<Human> myStudents =new  ArrayList<>(oldNonProgrammers);
+        myStudents.add(new Human("Алоев", 15, "школьник"));
+        System.out.println("myStudents = " + myStudents);
     }
 
     private static List<Rectangle> filterRectangles(Collection<Rectangle> rectangles, Checker<Rectangle> checker) {
